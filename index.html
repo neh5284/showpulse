@@ -2,8 +2,13 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>ShowPulse - TV Show Release Notifier</title>
+
+  <!-- PWA & iOS Safari Meta Tags -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#fcf9f2">
 
   <!-- Google Fonts: Raleway (Weights 300, 400, 500 ONLY - STRICTLY NO BOLD) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -65,6 +70,8 @@
       margin: 0;
       padding: 0;
       -webkit-font-smoothing: antialiased;
+      padding-top: env(safe-area-inset-top);
+      padding-bottom: env(safe-area-inset-bottom);
     }
 
     /* ACCESSIBILITY & HCI FOCUS SIGNIFIERS */
@@ -73,7 +80,7 @@
       outline-offset: 1px !important;
     }
 
-    /* EDITORIAL BUTTONS (DELINEATED BY SOLID BACKGROUND COLOR) */
+    /* EDITORIAL BUTTONS */
     .btn-action {
       font-size: 0.8125rem;
       letter-spacing: 0.01em;
@@ -123,7 +130,7 @@
       cursor: not-allowed;
     }
 
-    /* CUSTOM MINIMAL SCROLLBAR WITH SLIGHT TINT SHIFTS */
+    /* CUSTOM MINIMAL SCROLLBAR */
     ::-webkit-scrollbar {
       width: 6px;
       height: 6px;
@@ -141,364 +148,374 @@
 </head>
 <body class="min-h-screen flex flex-col bg-[#eee7d5]">
 
-  <!-- TOP HEADER (DISTINCT BACKGROUND: OFF-WHITE #fcf9f2) -->
-  <header class="bg-[#fcf9f2] px-8 py-4 flex items-center justify-between sticky top-0 z-40 shrink-0" role="banner">
-    <div class="flex items-center space-x-6">
-      <div class="flex items-center space-x-3 cursor-pointer" onclick="switchTab('discover')" role="button" aria-label="ShowPulse Home" tabindex="0">
-        <div class="w-8 h-8 bg-[#c85a38] flex items-center justify-center text-white text-sm">
-          Sp
-        </div>
-        <span class="text-lg text-[#2a2621] tracking-wide">ShowPulse</span>
+<!-- TOP HEADER -->
+<header class="bg-[#fcf9f2] px-4 md:px-8 py-3 md:py-4 flex flex-col md:flex-row items-center justify-between sticky top-0 z-40 gap-3 shrink-0" role="banner">
+  <div class="flex items-center justify-between w-full md:w-auto">
+    <div class="flex items-center space-x-3 cursor-pointer" onclick="switchTab('discover')" role="button" aria-label="ShowPulse Home" tabindex="0">
+      <div class="w-8 h-8 bg-[#c85a38] flex items-center justify-center text-white text-sm">
+        Sp
       </div>
+      <span class="text-lg text-[#2a2621] tracking-wide">ShowPulse</span>
     </div>
 
-    <!-- Live Search Bar with Auto-Complete Dropdown -->
-    <div class="flex-1 max-w-xl mx-8 relative">
-      <div class="relative flex items-center bg-[#eee7d5]">
-        <input
-          type="text"
-          id="search-input"
-          placeholder="Search TV shows (e.g., Severance, Succession)..."
-          class="w-full bg-[#eee7d5] px-4 py-2.5 text-xs text-[#2a2621] placeholder-[#635c53] focus:bg-[#e4dccb]"
-          oninput="handleSearch(this.value)"
-          aria-label="Search TV shows"
-        >
-        <div class="absolute right-3 text-[#635c53]" aria-hidden="true">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-        </div>
-      </div>
-      <!-- Auto-complete Search Dropdown -->
-      <div id="search-dropdown" class="hidden absolute top-full left-0 right-0 bg-[#ffffff] z-50 max-h-80 overflow-y-auto" role="listbox"></div>
-    </div>
+    <!-- Mobile Menu Toggle Button -->
+    <button onclick="toggleMobileNav()" class="md:hidden btn-action btn-ghost text-xs p-2" aria-label="Toggle Navigation Menu">
+      <svg class="w-5 h-5 text-[#2a2621]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+    </button>
+  </div>
 
-    <!-- Header Quick Actions -->
-    <div class="flex items-center space-x-3">
-      <button onclick="toggleAuthModal()" class="btn-action btn-ghost text-xs flex items-center space-x-2" aria-label="Account authorization">
-        <svg class="w-4 h-4 text-[#2a2621]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
-        <span id="auth-btn-text">Account</span>
+  <!-- Live Search Bar -->
+  <div class="w-full md:flex-1 md:max-w-xl md:mx-8 relative">
+    <div class="relative flex items-center bg-[#eee7d5]">
+      <input
+              type="text"
+              id="search-input"
+              placeholder="Search TV shows (e.g., Severance, Succession)..."
+              class="w-full bg-[#eee7d5] px-4 py-2.5 text-xs text-[#2a2621] placeholder-[#635c53] focus:bg-[#e4dccb]"
+              oninput="handleSearch(this.value)"
+              aria-label="Search TV shows"
+      >
+      <div class="absolute right-3 text-[#635c53]" aria-hidden="true">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+      </div>
+    </div>
+    <!-- Auto-complete Search Dropdown -->
+    <div id="search-dropdown" class="hidden absolute top-full left-0 right-0 bg-[#ffffff] z-50 max-h-80 overflow-y-auto" role="listbox"></div>
+  </div>
+
+  <!-- Header Quick Actions -->
+  <div class="hidden md:flex items-center space-x-3">
+    <button onclick="toggleAuthModal()" class="btn-action btn-ghost text-xs flex items-center space-x-2" aria-label="Account authorization">
+      <svg class="w-4 h-4 text-[#2a2621]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+      <span id="auth-btn-text">Account</span>
+    </button>
+    <button onclick="switchTab('push-setup')" class="btn-action btn-secondary text-xs flex items-center space-x-2" aria-label="iOS PWA Push Setup">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+      <span>iOS setup</span>
+    </button>
+  </div>
+</header>
+
+<div class="flex flex-col md:flex-row flex-1 min-h-0">
+  <!-- NAVIGATION SIDEBAR / MOBILE NAV -->
+  <aside id="app-sidebar" class="hidden md:flex w-full md:w-64 bg-[#e4dccb] p-4 md:p-6 flex-col justify-between shrink-0" aria-label="Sidebar Navigation">
+    <nav class="space-y-1 w-full" aria-label="Main Navigation">
+      <button onclick="switchTab('discover')" id="nav-discover" class="w-full text-left px-4 py-3 text-xs bg-[#c85a38] text-white flex items-center space-x-3" aria-current="page">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+        <span>Discover shows</span>
       </button>
-      <button onclick="switchTab('push-setup')" class="btn-action btn-secondary text-xs flex items-center space-x-2" aria-label="iOS PWA Push Setup">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
-        <span>iOS setup</span>
-      </button>
-    </div>
-  </header>
-
-  <div class="flex flex-1 min-h-0">
-    <!-- NAVIGATION SIDEBAR (DISTINCT BACKGROUND: WARM STONE/SAND #e4dccb) -->
-    <aside class="w-64 bg-[#e4dccb] p-6 flex flex-col justify-between shrink-0" aria-label="Sidebar Navigation">
-      <nav class="space-y-1" aria-label="Main Navigation">
-        <button onclick="switchTab('discover')" id="nav-discover" class="w-full text-left px-4 py-3 text-xs bg-[#c85a38] text-white flex items-center space-x-3" aria-current="page">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-          <span>Discover shows</span>
-        </button>
-        <button onclick="switchTab('watchlist')" id="nav-watchlist" class="w-full text-left px-4 py-3 text-xs text-[#2a2621] hover:bg-[#d8ceb8] flex items-center justify-between transition-colors">
-          <div class="flex items-center space-x-3">
-            <svg class="w-4 h-4 text-[#635c53]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path></svg>
-            <span>My watchlist</span>
-          </div>
-          <span id="watchlist-count-badge" class="bg-[#2a2621] text-white text-[10px] px-2 py-0.5">0</span>
-        </button>
-        <button onclick="switchTab('calendar')" id="nav-calendar" class="w-full text-left px-4 py-3 text-xs text-[#2a2621] hover:bg-[#d8ceb8] flex items-center space-x-3 transition-colors">
-          <svg class="w-4 h-4 text-[#635c53]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-          <span>Release schedule</span>
-        </button>
-        <button onclick="switchTab('push-setup')" id="nav-push-setup" class="w-full text-left px-4 py-3 text-xs text-[#2a2621] hover:bg-[#d8ceb8] flex items-center space-x-3 transition-colors">
-          <svg class="w-4 h-4 text-[#635c53]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
-          <span>iOS PWA setup</span>
-        </button>
-      </nav>
-
-      <!-- System Onboarding / Regional Design Helper -->
-      <div class="p-4 bg-[#d8ceb8] text-xs space-y-2">
-        <div class="text-[#c85a38] text-[11px]">Editorial palette layout</div>
-        <p class="text-[#635c53] text-[11px] leading-relaxed">
-           Header (`#fcf9f2`), Sidebar (`#e4dccb`), Canvas (`#eee7d5`), and Cards (`#ffffff`) meet with zero explicit borders or gaps.
-        </p>
-      </div>
-    </aside>
-
-    <!-- MAIN WORKSPACE CANVAS (DISTINCT BACKGROUND: WARM CREAM #eee7d5) -->
-    <main class="flex-1 p-8 overflow-y-auto bg-[#eee7d5]" role="main">
-
-      <!-- ERROR PREVENTION & RECOVERY: UNDO TOAST BANNER -->
-      <div id="undo-toast" class="hidden mb-6 bg-[#e4aa44] p-4 flex items-center justify-between" role="alert">
+      <button onclick="switchTab('watchlist')" id="nav-watchlist" class="w-full text-left px-4 py-3 text-xs text-[#2a2621] hover:bg-[#d8ceb8] flex items-center justify-between transition-colors">
         <div class="flex items-center space-x-3">
-          <svg class="w-5 h-5 text-[#2a2621]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-          <span id="undo-toast-message" class="text-xs text-[#2a2621]">Show removed from watchlist.</span>
+          <svg class="w-4 h-4 text-[#635c53]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path></svg>
+          <span>My watchlist</span>
         </div>
-        <button onclick="executeUndo()" class="btn-action btn-primary text-xs" aria-label="Undo show removal action">Undo removal</button>
-      </div>
+        <span id="watchlist-count-badge" class="bg-[#2a2621] text-white text-[10px] px-2 py-0.5">0</span>
+      </button>
+      <button onclick="switchTab('calendar')" id="nav-calendar" class="w-full text-left px-4 py-3 text-xs text-[#2a2621] hover:bg-[#d8ceb8] flex items-center space-x-3 transition-colors">
+        <svg class="w-4 h-4 text-[#635c53]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2H5a2 2 0 00-2 2v12a2 2 0 00-2 2z"></path></svg>
+        <span>Release schedule</span>
+      </button>
+      <button onclick="switchTab('push-setup')" id="nav-push-setup" class="w-full text-left px-4 py-3 text-xs text-[#2a2621] hover:bg-[#d8ceb8] flex items-center space-x-3 transition-colors">
+        <svg class="w-4 h-4 text-[#635c53]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+        <span>iOS PWA setup</span>
+      </button>
+      <button onclick="toggleAuthModal()" class="md:hidden w-full text-left px-4 py-3 text-xs text-[#2a2621] hover:bg-[#d8ceb8] flex items-center space-x-3 transition-colors">
+        <svg class="w-4 h-4 text-[#635c53]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+        <span>Account Authorization</span>
+      </button>
+    </nav>
 
-      <!-- DISCOVER TAB VIEW -->
-      <section id="view-discover" class="space-y-8">
-        <!-- Hero Banner Panel (Surface Tint: Off-white #ffffff) -->
-        <div class="bg-[#ffffff] p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <div>
-            <h1 class="text-2xl text-[#2a2621]">TV Show Release Notifier</h1>
-            <p class="text-xs text-[#635c53] mt-2">Live episode countdowns and Web Push release alerts powered by TMDB metadata.</p>
-          </div>
-          <div class="flex space-x-3">
-            <button onclick="switchTab('watchlist')" class="btn-action btn-secondary text-xs">View watchlist</button>
-            <button onclick="fetchTrendingShows()" class="btn-action btn-subtle text-xs">Refresh catalog</button>
-          </div>
-        </div>
-
-        <!-- Filter Category Tabs -->
-        <div class="flex flex-wrap gap-2 pt-2" role="tablist">
-          <button onclick="filterCategory('popular')" id="filter-popular" class="btn-action btn-secondary text-xs" role="tab">Trending now</button>
-          <button onclick="filterCategory('scifi')" id="filter-scifi" class="btn-action btn-ghost text-xs" role="tab">Sci-Fi & Fantasy</button>
-          <button onclick="filterCategory('drama')" id="filter-drama" class="btn-action btn-ghost text-xs" role="tab">Drama & Crime</button>
-          <button onclick="filterCategory('animation')" id="filter-animation" class="btn-action btn-ghost text-xs" role="tab">Animation</button>
-        </div>
-
-        <!-- Media Grid Section -->
-        <div>
-          <div class="flex items-center justify-between mb-4">
-            <h2 id="section-title" class="text-sm text-[#2a2621] tracking-wide">Trending Television Series</h2>
-            <span id="show-count" class="text-xs text-[#635c53]">Showing catalog</span>
-          </div>
-
-          <div id="shows-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
-            <!-- Dynamically Rendered via JS -->
-          </div>
-        </div>
-      </section>
-
-      <!-- WATCHLIST TAB VIEW -->
-      <section id="view-watchlist" class="hidden space-y-6">
-        <div class="flex items-center justify-between pb-4 bg-[#ffffff] p-6">
-          <div>
-            <h1 class="text-2xl text-[#2a2621]">My Watchlist</h1>
-            <p class="text-xs text-[#635c53] mt-1">Your active series tracking queue and release notification alerts.</p>
-          </div>
-          <button onclick="switchTab('discover')" class="btn-action btn-primary text-xs">+ Add more shows</button>
-        </div>
-
-        <!-- Empty Watchlist Placeholder -->
-        <div id="watchlist-empty" class="bg-[#ffffff] p-16 text-center">
-          <h3 class="text-base text-[#2a2621]">Your watchlist is empty</h3>
-          <p class="text-xs text-[#635c53] mt-2 max-w-md mx-auto">Explore the catalog and tap "+ Track show" to receive episode release notifications.</p>
-          <button onclick="switchTab('discover')" class="btn-action btn-secondary text-xs mt-6">Browse catalog</button>
-        </div>
-
-        <div id="watchlist-grid" class="hidden grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6"></div>
-      </section>
-
-      <!-- RELEASE CALENDAR VIEW -->
-      <section id="view-calendar" class="hidden space-y-6">
-        <div class="bg-[#ffffff] p-6">
-          <h1 class="text-2xl text-[#2a2621]">Release Schedule</h1>
-          <p class="text-xs text-[#635c53] mt-1">Upcoming episode drops and live air countdowns for tracked series.</p>
-        </div>
-        <div id="calendar-timeline" class="space-y-3"></div>
-      </section>
-
-      <!-- iOS PWA SETUP VIEW -->
-      <section id="view-push-setup" class="hidden space-y-6 max-w-3xl">
-        <div class="bg-[#ffffff] p-6">
-          <h1 class="text-2xl text-[#2a2621]">iOS Safari PWA & Push Setup</h1>
-          <p class="text-xs text-[#635c53] mt-1">Configuration guide for Web Push notifications on iOS 16.4+ and Desktop browsers.</p>
-        </div>
-
-        <div class="bg-[#ffffff] p-6 space-y-4">
-          <h2 class="text-sm text-[#c85a38]">1. Add to Home Screen procedure</h2>
-          <ol class="list-decimal list-inside space-y-2 text-xs text-[#2a2621] leading-relaxed">
-            <li>Launch this application inside <span class="text-[#c85a38]">Safari on iOS 16.4+</span>.</li>
-            <li>Tap the <span class="text-[#2a2621]">Share Icon</span> in the bottom Safari navigation bar.</li>
-            <li>Select <span class="text-[#2a2621]">"Add to Home Screen"</span> and launch ShowPulse directly from your Home Screen.</li>
-            <li>Tap the button below to grant Web Push permissions.</li>
-          </ol>
-
-          <div class="pt-4 flex items-center justify-between bg-[#e4dccb] p-4">
-            <div>
-              <div class="text-[11px] text-[#635c53]">Notification permission status</div>
-              <div id="push-permission-status" class="text-xs text-[#2a2621] mt-0.5">Default / unprompted</div>
-            </div>
-            <button onclick="requestPushPermission()" class="btn-action btn-primary text-xs">
-              Enable Web Push alerts
-            </button>
-          </div>
-        </div>
-
-        <div class="bg-[#ffffff] p-6 space-y-4">
-          <h2 class="text-sm text-[#2a2621]">2. Push delivery simulator</h2>
-          <p class="text-xs text-[#635c53]">Test real-time push notification triggering directly on your browser or iOS PWA container.</p>
-          <button onclick="sendTestNotification()" class="btn-action btn-secondary text-xs">
-            Trigger test notification now
-          </button>
-        </div>
-      </section>
-
-    </main>
-  </div>
-
-  <!-- AUTH MODAL -->
-  <div id="auth-modal" class="hidden fixed inset-0 bg-[#2a2621]/60 flex items-center justify-center p-4 z-50" role="dialog" aria-modal="true" aria-labelledby="auth-modal-title">
-    <div class="bg-[#ffffff] max-w-md w-full p-8 relative">
-      <div class="flex justify-between items-center pb-4 mb-6 bg-[#e4dccb] -mx-8 -mt-8 p-6">
-        <h3 id="auth-modal-title" class="text-sm text-[#2a2621]">Account Authorization</h3>
-        <button onclick="toggleAuthModal()" class="text-[#2a2621] hover:text-[#c85a38] text-base" aria-label="Close modal">✕</button>
-      </div>
-      <div class="space-y-4">
-        <div>
-          <label for="auth-email" class="block text-[11px] text-[#2a2621] mb-1">Email address</label>
-          <input type="email" id="auth-email" placeholder="user@example.com" class="w-full bg-[#eee7d5] p-3 text-xs text-[#2a2621] focus:bg-[#e4dccb]">
-        </div>
-        <div>
-          <label for="auth-password" class="block text-[11px] text-[#2a2621] mb-1">Password</label>
-          <input type="password" id="auth-password" placeholder="••••••••" class="w-full bg-[#eee7d5] p-3 text-xs text-[#2a2621] focus:bg-[#e4dccb]">
-        </div>
-        <div class="flex space-x-2 pt-2">
-          <button onclick="handleAuth('login')" class="btn-action btn-primary flex-1 text-xs">Log in</button>
-          <button onclick="handleAuth('signup')" class="btn-action btn-subtle flex-1 text-xs">Sign up</button>
-        </div>
-      </div>
+    <div class="hidden md:block p-4 bg-[#d8ceb8] text-xs space-y-2 mt-4">
+      <div class="text-[#c85a38] text-[11px]">Editorial palette layout</div>
+      <p class="text-[#635c53] text-[11px] leading-relaxed">
+        Header (`#fcf9f2`), Sidebar (`#e4dccb`), Canvas (`#eee7d5`), and Cards (`#ffffff`) meet with zero explicit borders or gaps.
+      </p>
     </div>
-  </div>
+  </aside>
 
-  <!-- SHOW DETAILS MODAL -->
-  <div id="show-modal" class="hidden fixed inset-0 bg-[#2a2621]/60 flex items-center justify-center p-4 z-50" role="dialog" aria-modal="true" aria-labelledby="modal-show-title">
-    <div class="bg-[#ffffff] max-w-2xl w-full p-8 relative max-h-[90vh] overflow-y-auto">
-      <div class="flex justify-between items-start pb-4 mb-6 bg-[#e4dccb] -mx-8 -mt-8 p-6">
+  <!-- MAIN WORKSPACE CANVAS -->
+  <main class="flex-1 p-4 md:p-8 overflow-y-auto bg-[#eee7d5]" role="main">
+
+    <!-- UNDO TOAST BANNER -->
+    <div id="undo-toast" class="hidden mb-6 bg-[#e4aa44] p-4 flex items-center justify-between" role="alert">
+      <div class="flex items-center space-x-3">
+        <svg class="w-5 h-5 text-[#2a2621]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        <span id="undo-toast-message" class="text-xs text-[#2a2621]">Show removed from watchlist.</span>
+      </div>
+      <button onclick="executeUndo()" class="btn-action btn-primary text-xs" aria-label="Undo show removal action">Undo removal</button>
+    </div>
+
+    <!-- DISCOVER TAB VIEW -->
+    <section id="view-discover" class="space-y-6 md:space-y-8">
+      <!-- Hero Banner Panel -->
+      <div class="bg-[#ffffff] p-6 md:p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h3 id="modal-show-title" class="text-xl text-[#2a2621]">Show Title</h3>
-          <span id="modal-show-network" class="text-xs text-[#c85a38] mt-0.5 block">Network</span>
+          <h1 class="text-xl md:text-2xl text-[#2a2621]">TV Show Release Notifier</h1>
+          <p class="text-xs text-[#635c53] mt-2">Live episode countdowns and Web Push release alerts powered by TMDB metadata.</p>
         </div>
-        <button onclick="closeShowModal()" class="text-[#2a2621] hover:text-[#c85a38] text-base" aria-label="Close show details modal">✕</button>
+        <div class="flex flex-wrap gap-2 w-full md:w-auto">
+          <button onclick="switchTab('watchlist')" class="btn-action btn-secondary text-xs flex-1 md:flex-initial">View watchlist</button>
+          <button onclick="fetchTrendingShows()" class="btn-action btn-subtle text-xs flex-1 md:flex-initial">Refresh catalog</button>
+        </div>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <img id="modal-show-poster" src="" alt="Show poster" class="w-full">
-        <div class="md:col-span-2 space-y-4">
-          <p id="modal-show-overview" class="text-xs text-[#635c53] leading-relaxed">Overview text...</p>
-          <div class="bg-[#eee7d5] p-4 text-xs space-y-1">
-            <div><span class="text-[#2a2621]">Next episode air date:</span> <span id="modal-show-airdate" class="text-[#c85a38]">--</span></div>
-            <div><span class="text-[#2a2621]">Series status:</span> <span id="modal-show-status">--</span></div>
+      <!-- Filter Category Tabs -->
+      <div class="flex flex-wrap gap-2 pt-2" role="tablist">
+        <button onclick="filterCategory('popular')" id="filter-popular" class="btn-action btn-secondary text-xs" role="tab">Trending now</button>
+        <button onclick="filterCategory('scifi')" id="filter-scifi" class="btn-action btn-ghost text-xs" role="tab">Sci-Fi & Fantasy</button>
+        <button onclick="filterCategory('drama')" id="filter-drama" class="btn-action btn-ghost text-xs" role="tab">Drama & Crime</button>
+        <button onclick="filterCategory('animation')" id="filter-animation" class="btn-action btn-ghost text-xs" role="tab">Animation</button>
+      </div>
+
+      <!-- Media Grid Section -->
+      <div>
+        <div class="flex items-center justify-between mb-4">
+          <h2 id="section-title" class="text-sm text-[#2a2621] tracking-wide">Trending Television Series</h2>
+          <span id="show-count" class="text-xs text-[#635c53]">Showing catalog</span>
+        </div>
+
+        <div id="shows-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
+          <!-- Dynamically Rendered via JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- WATCHLIST TAB VIEW -->
+    <section id="view-watchlist" class="hidden space-y-6">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 bg-[#ffffff] p-6">
+        <div>
+          <h1 class="text-xl md:text-2xl text-[#2a2621]">My Watchlist</h1>
+          <p class="text-xs text-[#635c53] mt-1">Your active series tracking queue and release notification alerts.</p>
+        </div>
+        <button onclick="switchTab('discover')" class="btn-action btn-primary text-xs w-full sm:w-auto">+ Add more shows</button>
+      </div>
+
+      <div id="watchlist-empty" class="bg-[#ffffff] p-10 md:p-16 text-center">
+        <h3 class="text-base text-[#2a2621]">Your watchlist is empty</h3>
+        <p class="text-xs text-[#635c53] mt-2 max-w-md mx-auto">Explore the catalog and tap "+ Track show" to receive episode release notifications.</p>
+        <button onclick="switchTab('discover')" class="btn-action btn-secondary text-xs mt-6">Browse catalog</button>
+      </div>
+
+      <div id="watchlist-grid" class="hidden grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6"></div>
+    </section>
+
+    <!-- RELEASE CALENDAR VIEW -->
+    <section id="view-calendar" class="hidden space-y-6">
+      <div class="bg-[#ffffff] p-6">
+        <h1 class="text-xl md:text-2xl text-[#2a2621]">Release Schedule</h1>
+        <p class="text-xs text-[#635c53] mt-1">Upcoming episode drops and live air countdowns for tracked series.</p>
+      </div>
+      <div id="calendar-timeline" class="space-y-3"></div>
+    </section>
+
+    <!-- iOS PWA SETUP VIEW -->
+    <section id="view-push-setup" class="hidden space-y-6 max-w-3xl">
+      <div class="bg-[#ffffff] p-6">
+        <h1 class="text-xl md:text-2xl text-[#2a2621]">iOS Safari PWA & Push Setup</h1>
+        <p class="text-xs text-[#635c53] mt-1">Configuration guide for Web Push notifications on iOS 16.4+ and Desktop browsers.</p>
+      </div>
+
+      <div class="bg-[#ffffff] p-6 space-y-4">
+        <h2 class="text-sm text-[#c85a38]">1. Add to Home Screen procedure</h2>
+        <ol class="list-decimal list-inside space-y-2 text-xs text-[#2a2621] leading-relaxed">
+          <li>Launch this application inside <span class="text-[#c85a38]">Safari on iOS 16.4+</span>.</li>
+          <li>Tap the <span class="text-[#2a2621]">Share Icon</span> in the bottom Safari navigation bar.</li>
+          <li>Select <span class="text-[#2a2621]">"Add to Home Screen"</span> and launch ShowPulse directly from your Home Screen.</li>
+          <li>Tap the button below to grant Web Push permissions.</li>
+        </ol>
+
+        <div class="pt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[#e4dccb] p-4">
+          <div>
+            <div class="text-[11px] text-[#635c53]">Notification permission status</div>
+            <div id="push-permission-status" class="text-xs text-[#2a2621] mt-0.5">Default / unprompted</div>
           </div>
-          <button id="modal-track-btn" onclick="" class="btn-action btn-primary w-full text-xs">
-            + Add to watchlist
+          <button onclick="requestPushPermission()" class="btn-action btn-primary text-xs w-full sm:w-auto">
+            Enable Web Push alerts
           </button>
         </div>
       </div>
+
+      <div class="bg-[#ffffff] p-6 space-y-4">
+        <h2 class="text-sm text-[#2a2621]">2. Push delivery simulator</h2>
+        <p class="text-xs text-[#635c53]">Test real-time push notification triggering directly on your browser or iOS PWA container.</p>
+        <button onclick="sendTestNotification()" class="btn-action btn-secondary text-xs w-full sm:w-auto">
+          Trigger test notification now
+        </button>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- AUTH MODAL -->
+<div id="auth-modal" class="hidden fixed inset-0 bg-[#2a2621]/60 flex items-center justify-center p-4 z-50" role="dialog" aria-modal="true" aria-labelledby="auth-modal-title">
+  <div class="bg-[#ffffff] max-w-md w-full p-6 md:p-8 relative">
+    <div class="flex justify-between items-center pb-4 mb-6 bg-[#e4dccb] -mx-6 -mt-6 md:-mx-8 md:-mt-8 p-6">
+      <h3 id="auth-modal-title" class="text-sm text-[#2a2621]">Account Authorization</h3>
+      <button onclick="toggleAuthModal()" class="text-[#2a2621] hover:text-[#c85a38] text-base" aria-label="Close modal">✕</button>
+    </div>
+    <div class="space-y-4">
+      <div>
+        <label for="auth-email" class="block text-[11px] text-[#2a2621] mb-1">Email address</label>
+        <input type="email" id="auth-email" placeholder="user@example.com" class="w-full bg-[#eee7d5] p-3 text-xs text-[#2a2621] focus:bg-[#e4dccb]">
+      </div>
+      <div>
+        <label for="auth-password" class="block text-[11px] text-[#2a2621] mb-1">Password</label>
+        <input type="password" id="auth-password" placeholder="••••••••" class="w-full bg-[#eee7d5] p-3 text-xs text-[#2a2621] focus:bg-[#e4dccb]">
+      </div>
+      <div class="flex space-x-2 pt-2">
+        <button onclick="handleAuth('login')" class="btn-action btn-primary flex-1 text-xs">Log in</button>
+        <button onclick="handleAuth('signup')" class="btn-action btn-subtle flex-1 text-xs">Sign up</button>
+      </div>
     </div>
   </div>
+</div>
 
-  <script>
-    // TMDB API Integration Configuration
-    const TMDB_API_KEY = 'e428afe64de2ab3096bb9c96d0200307';
-    const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
-    const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p/w500';
+<!-- SHOW DETAILS MODAL -->
+<div id="show-modal" class="hidden fixed inset-0 bg-[#2a2621]/60 flex items-center justify-center p-4 z-50" role="dialog" aria-modal="true" aria-labelledby="modal-show-title">
+  <div class="bg-[#ffffff] max-w-2xl w-full p-6 md:p-8 relative max-h-[90vh] overflow-y-auto">
+    <div class="flex justify-between items-start pb-4 mb-6 bg-[#e4dccb] -mx-6 -mt-6 md:-mx-8 md:-mt-8 p-6">
+      <div>
+        <h3 id="modal-show-title" class="text-lg md:text-xl text-[#2a2621]">Show Title</h3>
+        <span id="modal-show-network" class="text-xs text-[#c85a38] mt-0.5 block">Network</span>
+      </div>
+      <button onclick="closeShowModal()" class="text-[#2a2621] hover:text-[#c85a38] text-base" aria-label="Close show details modal">✕</button>
+    </div>
 
-    // Application State
-    let watchlist = JSON.parse(localStorage.getItem('showpulse_watchlist') || '[]');
-    let lastRemovedShow = null;
-    let currentShows = [];
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <img id="modal-show-poster" src="" alt="Show poster" class="w-full h-64 object-cover md:h-auto">
+      <div class="md:col-span-2 space-y-4">
+        <p id="modal-show-overview" class="text-xs text-[#635c53] leading-relaxed">Overview text...</p>
+        <div class="bg-[#eee7d5] p-4 text-xs space-y-1">
+          <div><span class="text-[#2a2621]">Next episode air date:</span> <span id="modal-show-airdate" class="text-[#c85a38]">--</span></div>
+          <div><span class="text-[#2a2621]">Series status:</span> <span id="modal-show-status">--</span></div>
+        </div>
+        <button id="modal-track-btn" onclick="" class="btn-action btn-primary w-full text-xs">
+          + Add to watchlist
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
 
-    // Initialization
-    document.addEventListener('DOMContentLoaded', () => {
-      fetchTrendingShows();
-      updateWatchlistBadge();
+<script>
+  const TMDB_API_KEY = 'e428afe64de2ab3096bb9c96d0200307';
+  const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
+  const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p/w500';
+
+  let watchlist = JSON.parse(localStorage.getItem('showpulse_watchlist') || '[]');
+  let lastRemovedShow = null;
+  let currentShows = [];
+
+  document.addEventListener('DOMContentLoaded', () => {
+    fetchTrendingShows();
+    updateWatchlistBadge();
+  });
+
+  function toggleMobileNav() {
+    const sidebar = document.getElementById('app-sidebar');
+    sidebar.classList.toggle('hidden');
+  }
+
+  function switchTab(tab) {
+    if (window.innerWidth < 768) {
+      document.getElementById('app-sidebar').classList.add('hidden');
+    }
+
+    ['discover', 'watchlist', 'calendar', 'push-setup'].forEach(t => {
+      document.getElementById(`view-${t}`).classList.add('hidden');
+      const navBtn = document.getElementById(`nav-${t}`);
+      if (navBtn) {
+        navBtn.className = "w-full text-left px-4 py-3 text-xs text-[#2a2621] hover:bg-[#d8ceb8] flex items-center space-x-3 transition-colors";
+        navBtn.removeAttribute('aria-current');
+      }
     });
 
-    // View Navigation Tabs
-    function switchTab(tab) {
-      ['discover', 'watchlist', 'calendar', 'push-setup'].forEach(t => {
-        document.getElementById(`view-${t}`).classList.add('hidden');
-        const navBtn = document.getElementById(`nav-${t}`);
-        if (navBtn) {
-          navBtn.className = "w-full text-left px-4 py-3 text-xs text-[#2a2621] hover:bg-[#d8ceb8] flex items-center space-x-3 transition-colors";
-          navBtn.removeAttribute('aria-current');
-        }
-      });
-
-      document.getElementById(`view-${tab}`).classList.remove('hidden');
-      const activeNav = document.getElementById(`nav-${tab}`);
-      if (activeNav) {
-        activeNav.className = "w-full text-left px-4 py-3 text-xs bg-[#c85a38] text-white flex items-center space-x-3";
-        activeNav.setAttribute('aria-current', 'page');
-      }
-
-      if (tab === 'watchlist') renderWatchlist();
-      if (tab === 'calendar') renderCalendar();
+    document.getElementById(`view-${tab}`).classList.remove('hidden');
+    const activeNav = document.getElementById(`nav-${tab}`);
+    if (activeNav) {
+      activeNav.className = "w-full text-left px-4 py-3 text-xs bg-[#c85a38] text-white flex items-center space-x-3";
+      activeNav.setAttribute('aria-current', 'page');
     }
 
-    // Fetch TMDB TV Shows Catalog
-    async function fetchTrendingShows() {
-      const grid = document.getElementById('shows-grid');
-      grid.innerHTML = '<div class="col-span-full text-center py-12 text-xs text-[#635c53]">Fetching television catalog from TMDB...</div>';
+    if (tab === 'watchlist') renderWatchlist();
+    if (tab === 'calendar') renderCalendar();
+  }
 
-      try {
-        const res = await fetch(`${TMDB_BASE_URL}/tv/popular?api_key=${TMDB_API_KEY}&language=en-US&page=1`);
-        const data = await res.json();
-        currentShows = data.results || [];
-        document.getElementById('section-title').textContent = 'Trending Television Series';
-        document.getElementById('show-count').textContent = `Showing ${currentShows.length} series`;
-        renderShowCards(currentShows, 'shows-grid');
-      } catch (err) {
-        grid.innerHTML = '<div class="col-span-full text-center py-12 text-xs text-[#c85a38]">Error connecting to TMDB catalog API</div>';
-      }
+  async function fetchTrendingShows() {
+    const grid = document.getElementById('shows-grid');
+    grid.innerHTML = '<div class="col-span-full text-center py-12 text-xs text-[#635c53]">Fetching television catalog from TMDB...</div>';
+
+    try {
+      const res = await fetch(`${TMDB_BASE_URL}/tv/popular?api_key=${TMDB_API_KEY}&language=en-US&page=1`);
+      const data = await res.json();
+      currentShows = data.results || [];
+      document.getElementById('section-title').textContent = 'Trending Television Series';
+      document.getElementById('show-count').textContent = `Showing ${currentShows.length} series`;
+      renderShowCards(currentShows, 'shows-grid');
+    } catch (err) {
+      grid.innerHTML = '<div class="col-span-full text-center py-12 text-xs text-[#c85a38]">Error connecting to TMDB catalog API</div>';
+    }
+  }
+
+  async function filterCategory(category) {
+    ['popular', 'scifi', 'drama', 'animation'].forEach(c => {
+      const btn = document.getElementById(`filter-${c}`);
+      if (btn) btn.className = "btn-action btn-ghost text-xs";
+    });
+    document.getElementById(`filter-${category}`).className = "btn-action btn-secondary text-xs";
+
+    if (category === 'popular') {
+      fetchTrendingShows();
+      return;
     }
 
-    async function filterCategory(category) {
-      ['popular', 'scifi', 'drama', 'animation'].forEach(c => {
-        const btn = document.getElementById(`filter-${c}`);
-        if (btn) btn.className = "btn-action btn-ghost text-xs";
-      });
-      document.getElementById(`filter-${category}`).className = "btn-action btn-secondary text-xs";
+    const genreMap = { scifi: '10765', drama: '18', animation: '16' };
+    const genreNames = { scifi: 'Sci-Fi & Fantasy', drama: 'Drama & Crime', animation: 'Animation' };
+    const genreId = genreMap[category];
+    const grid = document.getElementById('shows-grid');
+    grid.innerHTML = '<div class="col-span-full text-center py-12 text-xs text-[#635c53]">Searching genre catalog...</div>';
 
-      if (category === 'popular') {
-        fetchTrendingShows();
-        return;
-      }
+    try {
+      const res = await fetch(`${TMDB_BASE_URL}/discover/tv?api_key=${TMDB_API_KEY}&with_genres=${genreId}&sort_by=popularity.desc`);
+      const data = await res.json();
+      currentShows = data.results || [];
+      document.getElementById('section-title').textContent = `${genreNames[category]} Series`;
+      document.getElementById('show-count').textContent = `Showing ${currentShows.length} series`;
+      renderShowCards(currentShows, 'shows-grid');
+    } catch (e) {
+      fetchTrendingShows();
+    }
+  }
 
-      const genreMap = { scifi: '10765', drama: '18', animation: '16' };
-      const genreNames = { scifi: 'Sci-Fi & Fantasy', drama: 'Drama & Crime', animation: 'Animation' };
-      const genreId = genreMap[category];
-      const grid = document.getElementById('shows-grid');
-      grid.innerHTML = '<div class="col-span-full text-center py-12 text-xs text-[#635c53]">Searching genre catalog...</div>';
-
-      try {
-        const res = await fetch(`${TMDB_BASE_URL}/discover/tv?api_key=${TMDB_API_KEY}&with_genres=${genreId}&sort_by=popularity.desc`);
-        const data = await res.json();
-        currentShows = data.results || [];
-        document.getElementById('section-title').textContent = `${genreNames[category]} Series`;
-        document.getElementById('show-count').textContent = `Showing ${currentShows.length} series`;
-        renderShowCards(currentShows, 'shows-grid');
-      } catch (e) {
-        fetchTrendingShows();
-      }
+  function renderShowCards(shows, targetElementId) {
+    const container = document.getElementById(targetElementId);
+    if (!shows || shows.length === 0) {
+      container.innerHTML = '<div class="col-span-full text-center py-8 text-xs text-[#635c53]">No shows found</div>';
+      return;
     }
 
-    // Render Show Cards
-    function renderShowCards(shows, targetElementId) {
-      const container = document.getElementById(targetElementId);
-      if (!shows || shows.length === 0) {
-        container.innerHTML = '<div class="col-span-full text-center py-8 text-xs text-[#635c53]">No shows found</div>';
-        return;
-      }
+    container.innerHTML = shows.map((show, idx) => {
+      const isTracked = watchlist.some(s => s.id === show.id);
+      const posterUrl = show.poster_path ? `${TMDB_IMAGE_BASE}${show.poster_path}` : 'https://placehold.co/500x750/ffffff/2a2621?text=No+Poster';
 
-      container.innerHTML = shows.map((show, idx) => {
-        const isTracked = watchlist.some(s => s.id === show.id);
-        const posterUrl = show.poster_path ? `${TMDB_IMAGE_BASE}${show.poster_path}` : 'https://placehold.co/500x750/ffffff/2a2621?text=No+Poster';
+      const airDays = ((idx % 5) + 1) * 2;
+      const countdownText = airDays === 2 ? 'Airing today' : `Airs in ${airDays} days`;
 
-        const airDays = ((idx % 5) + 1) * 2;
-        const countdownText = airDays === 2 ? 'Airing today' : `Airs in ${airDays} days`;
-
-        return `
-          <div class="bg-[#ffffff] flex flex-col justify-between p-3 transition-colors hover:bg-[#fcf9f2]">
+      return `
+          <div class="bg-[#ffffff] flex flex-col justify-between p-2.5 md:p-3 transition-colors hover:bg-[#fcf9f2]">
             <div class="relative cursor-pointer" onclick="openShowModal(${show.id})" role="button" aria-label="View details for ${show.name}">
-              <img src="${posterUrl}" alt="${show.name}" class="w-full h-56 object-cover">
-              <div class="absolute top-2 right-2 bg-[#2a2621] text-[#e4aa44] text-[10px] px-2 py-0.5">
+              <img src="${posterUrl}" alt="${show.name}" class="w-full h-44 sm:h-56 object-cover">
+              <div class="absolute top-2 right-2 bg-[#2a2621] text-[#e4aa44] text-[10px] px-1.5 py-0.5">
                 ★ ${show.vote_average ? show.vote_average.toFixed(1) : 'N/A'}
               </div>
             </div>
-            <div class="pt-3 flex-1 flex flex-col justify-between space-y-3">
+            <div class="pt-2 md:pt-3 flex-1 flex flex-col justify-between space-y-2 md:space-y-3">
               <div>
                 <h3 class="text-xs text-[#2a2621] truncate" title="${show.name}">${show.name}</h3>
                 <div class="flex items-center justify-between mt-1.5">
                   <span class="text-[10px] text-[#635c53]">${show.first_air_date ? show.first_air_date.substring(0, 4) : 'TBA'}</span>
-                  <span class="text-[10px] bg-[#e4aa44] text-[#2a2621] px-2 py-0.5">
+                  <span class="text-[10px] bg-[#e4aa44] text-[#2a2621] px-1.5 py-0.5">
                     ${countdownText}
                   </span>
                 </div>
@@ -513,63 +530,63 @@
             </div>
           </div>
         `;
-      }).join('');
+    }).join('');
+  }
+
+  function toggleTrackShow(showId) {
+    const show = currentShows.find(s => s.id === showId) || watchlist.find(s => s.id === showId);
+    if (!show) return;
+
+    const index = watchlist.findIndex(s => s.id === showId);
+    if (index >= 0) {
+      lastRemovedShow = watchlist[index];
+      watchlist.splice(index, 1);
+      showToast(`Removed "${show.name}" from watchlist.`);
+    } else {
+      watchlist.push(show);
     }
 
-    function toggleTrackShow(showId) {
-      const show = currentShows.find(s => s.id === showId) || watchlist.find(s => s.id === showId);
-      if (!show) return;
+    localStorage.setItem('showpulse_watchlist', JSON.stringify(watchlist));
+    updateWatchlistBadge();
 
-      const index = watchlist.findIndex(s => s.id === showId);
-      if (index >= 0) {
-        lastRemovedShow = watchlist[index];
-        watchlist.splice(index, 1);
-        showToast(`Removed "${show.name}" from watchlist.`);
-      } else {
-        watchlist.push(show);
-      }
+    const activeDiscover = !document.getElementById('view-discover').classList.contains('hidden');
+    if (activeDiscover) renderShowCards(currentShows, 'shows-grid');
+    else renderWatchlist();
+  }
 
-      localStorage.setItem('showpulse_watchlist', JSON.stringify(watchlist));
-      updateWatchlistBadge();
+  function updateWatchlistBadge() {
+    document.getElementById('watchlist-count-badge').textContent = watchlist.length;
+  }
 
-      const activeDiscover = !document.getElementById('view-discover').classList.contains('hidden');
-      if (activeDiscover) renderShowCards(currentShows, 'shows-grid');
-      else renderWatchlist();
+  function renderWatchlist() {
+    const emptyState = document.getElementById('watchlist-empty');
+    const grid = document.getElementById('watchlist-grid');
+
+    if (watchlist.length === 0) {
+      emptyState.classList.remove('hidden');
+      grid.classList.add('hidden');
+    } else {
+      emptyState.classList.add('hidden');
+      grid.classList.remove('hidden');
+      renderShowCards(watchlist, 'watchlist-grid');
     }
+  }
 
-    function updateWatchlistBadge() {
-      document.getElementById('watchlist-count-badge').textContent = watchlist.length;
-    }
-
-    function renderWatchlist() {
-      const emptyState = document.getElementById('watchlist-empty');
-      const grid = document.getElementById('watchlist-grid');
-
-      if (watchlist.length === 0) {
-        emptyState.classList.remove('hidden');
-        grid.classList.add('hidden');
-      } else {
-        emptyState.classList.add('hidden');
-        grid.classList.remove('hidden');
-        renderShowCards(watchlist, 'watchlist-grid');
-      }
-    }
-
-    function renderCalendar() {
-      const timeline = document.getElementById('calendar-timeline');
-      if (watchlist.length === 0) {
-        timeline.innerHTML = `
+  function renderCalendar() {
+    const timeline = document.getElementById('calendar-timeline');
+    if (watchlist.length === 0) {
+      timeline.innerHTML = `
           <div class="bg-[#ffffff] p-8 text-center text-xs text-[#635c53]">
             No tracked shows in your watchlist. Add shows to build your release schedule.
           </div>
         `;
-        return;
-      }
+      return;
+    }
 
-      timeline.innerHTML = watchlist.map((show, idx) => {
-        const daysRemaining = (idx + 1) * 3;
-        return `
-          <div class="bg-[#ffffff] p-4 flex items-center justify-between">
+    timeline.innerHTML = watchlist.map((show, idx) => {
+      const daysRemaining = (idx + 1) * 3;
+      return `
+          <div class="bg-[#ffffff] p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div class="flex items-center space-x-4">
               <img src="${show.poster_path ? TMDB_IMAGE_BASE + show.poster_path : 'https://placehold.co/100x150/ffffff/2a2621?text=No+Img'}" alt="${show.name}" class="w-12 h-16 object-cover">
               <div>
@@ -578,54 +595,54 @@
               </div>
             </div>
             <div>
-              <span class="bg-[#e4aa44] px-3 py-1 text-[11px] text-[#2a2621]">
+              <span class="bg-[#e4aa44] px-3 py-1 text-[11px] text-[#2a2621] inline-block">
                 ${daysRemaining}d 14h 22m
               </span>
             </div>
           </div>
         `;
-      }).join('');
+    }).join('');
+  }
+
+  function showToast(msg) {
+    const toast = document.getElementById('undo-toast');
+    document.getElementById('undo-toast-message').textContent = msg;
+    toast.classList.remove('hidden');
+    setTimeout(() => {
+      toast.classList.add('hidden');
+    }, 6000);
+  }
+
+  function executeUndo() {
+    if (lastRemovedShow) {
+      watchlist.push(lastRemovedShow);
+      localStorage.setItem('showpulse_watchlist', JSON.stringify(watchlist));
+      lastRemovedShow = null;
+      updateWatchlistBadge();
+      document.getElementById('undo-toast').classList.add('hidden');
+      renderWatchlist();
+    }
+  }
+
+  async function handleSearch(query) {
+    const dropdown = document.getElementById('search-dropdown');
+    if (!query || query.trim().length < 2) {
+      dropdown.classList.add('hidden');
+      return;
     }
 
-    function showToast(msg) {
-      const toast = document.getElementById('undo-toast');
-      document.getElementById('undo-toast-message').textContent = msg;
-      toast.classList.remove('hidden');
-      setTimeout(() => {
-        toast.classList.add('hidden');
-      }, 6000);
-    }
+    dropdown.innerHTML = '<div class="p-3 text-xs text-[#635c53]">Searching TMDB...</div>';
+    dropdown.classList.remove('hidden');
 
-    function executeUndo() {
-      if (lastRemovedShow) {
-        watchlist.push(lastRemovedShow);
-        localStorage.setItem('showpulse_watchlist', JSON.stringify(watchlist));
-        lastRemovedShow = null;
-        updateWatchlistBadge();
-        document.getElementById('undo-toast').classList.add('hidden');
-        renderWatchlist();
-      }
-    }
+    try {
+      const res = await fetch(`${TMDB_BASE_URL}/search/tv?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(query)}`);
+      const data = await res.json();
+      const results = data.results || [];
 
-    async function handleSearch(query) {
-      const dropdown = document.getElementById('search-dropdown');
-      if (!query || query.trim().length < 2) {
-        dropdown.classList.add('hidden');
-        return;
-      }
-
-      dropdown.innerHTML = '<div class="p-3 text-xs text-[#635c53]">Searching TMDB...</div>';
-      dropdown.classList.remove('hidden');
-
-      try {
-        const res = await fetch(`${TMDB_BASE_URL}/search/tv?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(query)}`);
-        const data = await res.json();
-        const results = data.results || [];
-
-        if (results.length === 0) {
-          dropdown.innerHTML = '<div class="p-3 text-xs text-[#635c53]">No matching TV shows found</div>';
-        } else {
-          dropdown.innerHTML = results.slice(0, 5).map(show => `
+      if (results.length === 0) {
+        dropdown.innerHTML = '<div class="p-3 text-xs text-[#635c53]">No matching TV shows found</div>';
+      } else {
+        dropdown.innerHTML = results.slice(0, 5).map(show => `
             <div onclick="openShowModal(${show.id})" class="p-3 hover:bg-[#fcf9f2] cursor-pointer flex items-center space-x-3 transition-colors" role="option">
               <img src="${show.poster_path ? TMDB_IMAGE_BASE + show.poster_path : 'https://placehold.co/50x75'}" alt="${show.name}" class="w-8 h-12 object-cover">
               <div>
@@ -634,77 +651,106 @@
               </div>
             </div>
           `).join('');
-        }
-      } catch (e) {
-        dropdown.classList.add('hidden');
       }
+    } catch (e) {
+      dropdown.classList.add('hidden');
     }
+  }
 
-    async function openShowModal(showId) {
-      document.getElementById('search-dropdown').classList.add('hidden');
-      try {
-        const res = await fetch(`${TMDB_BASE_URL}/tv/${showId}?api_key=${TMDB_API_KEY}`);
-        const show = await res.json();
+  async function openShowModal(showId) {
+    document.getElementById('search-dropdown').classList.add('hidden');
+    try {
+      const res = await fetch(`${TMDB_BASE_URL}/tv/${showId}?api_key=${TMDB_API_KEY}`);
+      const show = await res.json();
 
-        document.getElementById('modal-show-title').textContent = show.name;
-        document.getElementById('modal-show-network').textContent = show.networks && show.networks[0] ? show.networks[0].name : 'Television Network';
-        document.getElementById('modal-show-overview').textContent = show.overview || 'No overview currently available for this series.';
-        document.getElementById('modal-show-poster').src = show.poster_path ? TMDB_IMAGE_BASE + show.poster_path : 'https://placehold.co/500x750';
-        document.getElementById('modal-show-airdate').textContent = show.next_episode_to_air ? show.next_episode_to_air.air_date : (show.first_air_date || 'TBA');
-        document.getElementById('modal-show-status').textContent = show.status || 'Active';
+      document.getElementById('modal-show-title').textContent = show.name;
+      document.getElementById('modal-show-network').textContent = show.networks && show.networks[0] ? show.networks[0].name : 'Television Network';
+      document.getElementById('modal-show-overview').textContent = show.overview || 'No overview currently available for this series.';
+      document.getElementById('modal-show-poster').src = show.poster_path ? TMDB_IMAGE_BASE + show.poster_path : 'https://placehold.co/500x750';
+      document.getElementById('modal-show-airdate').textContent = show.next_episode_to_air ? show.next_episode_to_air.air_date : (show.first_air_date || 'TBA');
+      document.getElementById('modal-show-status').textContent = show.status || 'Active';
 
-        const trackBtn = document.getElementById('modal-track-btn');
-        const isTracked = watchlist.some(s => s.id === show.id);
-        trackBtn.textContent = isTracked ? 'Remove from watchlist' : '+ Add to watchlist';
-        trackBtn.onclick = () => {
-          toggleTrackShow(show.id);
-          closeShowModal();
-        };
+      const trackBtn = document.getElementById('modal-track-btn');
+      const isTracked = watchlist.some(s => s.id === show.id);
+      trackBtn.textContent = isTracked ? 'Remove from watchlist' : '+ Add to watchlist';
+      trackBtn.onclick = () => {
+        toggleTrackShow(show.id);
+        closeShowModal();
+      };
 
-        document.getElementById('show-modal').classList.remove('hidden');
-      } catch (e) {
-        console.error(e);
+      document.getElementById('show-modal').classList.remove('hidden');
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  function closeShowModal() {
+    document.getElementById('show-modal').classList.add('hidden');
+  }
+
+  function toggleAuthModal() {
+    const modal = document.getElementById('auth-modal');
+    modal.classList.toggle('hidden');
+  }
+
+  function requestPushPermission() {
+    if (!('Notification' in window)) {
+      alert('This browser does not support desktop notifications.');
+      return;
+    }
+    Notification.requestPermission().then(permission => {
+      document.getElementById('push-permission-status').textContent = permission;
+      if (permission === 'granted') {
+        alert('Web Push notifications enabled successfully.');
       }
-    }
+    });
+  }
 
-    function closeShowModal() {
-      document.getElementById('show-modal').classList.add('hidden');
-    }
-
-    function toggleAuthModal() {
-      document.getElementById('auth-modal').classList.toggle('hidden');
-    }
-
-    function requestPushPermission() {
-      if (!('Notification' in window)) {
-        alert('Web Push notifications are not supported on this browser.');
-        return;
-      }
-
-      Notification.requestPermission().then(permission => {
-        document.getElementById('push-permission-status').textContent = permission;
+  function sendTestNotification() {
+    if (Notification.permission === 'granted') {
+      new Notification('ShowPulse Release Alert', {
+        body: 'A new episode of your tracked series is airing tonight!',
+        icon: 'https://placehold.co/192x192/c85a38/ffffff?text=Sp'
       });
+    } else {
+      alert('Please enable notification permissions first.');
+    }
+  }
+</script>
+
+<!-- Supabase JS SDK CDN -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  const SUPABASE_URL = 'YOUR_SUPABASE_PROJECT_URL';
+  const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+  const supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+
+  async function handleAuth(type) {
+    const email = document.getElementById('auth-email').value;
+    const password = document.getElementById('auth-password').value;
+    if (!email || !password) {
+      alert('Please enter both email and password.');
+      return;
+    }
+    if (!supabase) {
+      alert('Supabase client not initialized. Please add your credentials.');
+      return;
     }
 
-    function sendTestNotification() {
-      if ('Notification' in window && Notification.permission === 'granted') {
-        new Notification('ShowPulse Episode Alert', {
-          body: 'Severance Season 2 Episode 1 is now airing!',
-          icon: 'https://placehold.co/128/c85a38/ffffff?text=Sp'
-        });
-      } else {
-        alert('Please grant Web Push permissions in step 1 first.');
+    if (type === 'signup') {
+      const { data, error } = await supabase.auth.signUp({ email, password });
+      if (error) alert(error.message);
+      else alert('Check your email for the confirmation link!');
+    } else {
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) alert(error.message);
+      else {
+        alert('Logged in successfully!');
+        toggleAuthModal();
+        document.getElementById('auth-btn-text').textContent = email.split('@')[0];
       }
     }
-
-    function handleAuth(type) {
-      const email = document.getElementById('auth-email').value;
-      if (!email) {
-        return;
-      }
-      document.getElementById('auth-btn-text').textContent = email.split('@')[0];
-      toggleAuthModal();
-    }
-  </script>
+  }
+</script>
 </body>
 </html>
