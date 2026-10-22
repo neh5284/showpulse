@@ -525,8 +525,24 @@
     }).join('');
   }
 
-  async function toggleTrackShow(showId) {
-    const show = currentShows.find(s => s.id === showId) || watchlist.find(s => s.id === showId);
+ async function toggleTrackShow(showId) {
+    // Check current list or watchlist first
+    let show = currentShows.find(s => s.id === showId) || watchlist.find(s => s.id === showId);
+    
+    // Fallback: If opened via search/modal and not in current catalog array, grab data from modal DOM
+    if (!show) {
+      const titleEl = document.getElementById('modal-show-title');
+      if (titleEl && titleEl.textContent && titleEl.textContent !== 'Show Title') {
+        show = {
+          id: showId,
+          name: titleEl.textContent,
+          poster_path: document.getElementById('modal-show-poster').getAttribute('src')?.replace(TMDB_IMAGE_BASE, ''),
+          first_air_date: document.getElementById('modal-show-airdate').textContent,
+          vote_average: 0
+        };
+      }
+    }
+
     if (!show) return;
 
     const index = watchlist.findIndex(s => s.id === showId);
