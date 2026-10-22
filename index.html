@@ -52,16 +52,16 @@
     /* GLOBAL RESET, STRICT TYPOGRAPHY & ZERO BORDER ENFORCEMENT */
     *, ::before, ::after {
       font-family: 'Raleway', sans-serif !important;
-      font-weight: 400 !important; /* DEFAULT WEIGHT */
-      border-radius: 0px !important; /* Sharp 0px rectangular geometry */
-      text-transform: none !important; /* STRICT NO ALL-CAPS MANDATE */
-      border: 0 !important; /* STRICT NO EXPLICIT BORDER / OUTLINE LINES */
-      box-shadow: none !important; /* NO HEAVY BOX SHADOWS */
+      font-weight: 400 !important;
+      border-radius: 0px !important;
+      text-transform: none !important;
+      border: 0 !important;
+      box-shadow: none !important;
       box-sizing: border-box;
     }
 
     h1, h2, h3, h4, h5, h6, button, input, select {
-      font-weight: 500 !important; /* Soft title weight - STRICTLY NO BOLD (600+) */
+      font-weight: 500 !important;
     }
 
     body {
@@ -74,13 +74,11 @@
       padding-bottom: env(safe-area-inset-bottom);
     }
 
-    /* ACCESSIBILITY & HCI FOCUS SIGNIFIERS */
     a:focus-visible, button:focus-visible, input:focus-visible, [tabindex]:focus-visible {
       outline: 2px solid #c85a38 !important;
       outline-offset: 1px !important;
     }
 
-    /* EDITORIAL BUTTONS */
     .btn-action {
       font-size: 0.8125rem;
       letter-spacing: 0.01em;
@@ -130,7 +128,6 @@
       cursor: not-allowed;
     }
 
-    /* CUSTOM MINIMAL SCROLLBAR */
     ::-webkit-scrollbar {
       width: 6px;
       height: 6px;
@@ -158,7 +155,6 @@
       <span class="text-lg text-[#2a2621] tracking-wide">ShowPulse</span>
     </div>
 
-    <!-- Mobile Menu Toggle Button -->
     <button onclick="toggleMobileNav()" class="md:hidden btn-action btn-ghost text-xs p-2" aria-label="Toggle Navigation Menu">
       <svg class="w-5 h-5 text-[#2a2621]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
     </button>
@@ -179,7 +175,6 @@
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
       </div>
     </div>
-    <!-- Auto-complete Search Dropdown -->
     <div id="search-dropdown" class="hidden absolute top-full left-0 right-0 bg-[#ffffff] z-50 max-h-80 overflow-y-auto" role="listbox"></div>
   </div>
 
@@ -197,7 +192,7 @@
 </header>
 
 <div class="flex flex-col md:flex-row flex-1 min-h-0">
-  <!-- NAVIGATION SIDEBAR / MOBILE NAV -->
+  <!-- NAVIGATION SIDEBAR -->
   <aside id="app-sidebar" class="hidden md:flex w-full md:w-64 bg-[#e4dccb] p-4 md:p-6 flex-col justify-between shrink-0" aria-label="Sidebar Navigation">
     <nav class="space-y-1 w-full" aria-label="Main Navigation">
       <button onclick="switchTab('discover')" id="nav-discover" class="w-full text-left px-4 py-3 text-xs bg-[#c85a38] text-white flex items-center space-x-3" aria-current="page">
@@ -212,7 +207,7 @@
         <span id="watchlist-count-badge" class="bg-[#2a2621] text-white text-[10px] px-2 py-0.5">0</span>
       </button>
       <button onclick="switchTab('calendar')" id="nav-calendar" class="w-full text-left px-4 py-3 text-xs text-[#2a2621] hover:bg-[#d8ceb8] flex items-center space-x-3 transition-colors">
-        <svg class="w-4 h-4 text-[#635c53]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2H5a2 2 0 00-2 2v12a2 2 0 00-2 2z"></path></svg>
+        <svg class="w-4 h-4 text-[#635c53]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
         <span>Release schedule</span>
       </button>
       <button onclick="switchTab('push-setup')" id="nav-push-setup" class="w-full text-left px-4 py-3 text-xs text-[#2a2621] hover:bg-[#d8ceb8] flex items-center space-x-3 transition-colors">
@@ -247,7 +242,6 @@
 
     <!-- DISCOVER TAB VIEW -->
     <section id="view-discover" class="space-y-6 md:space-y-8">
-      <!-- Hero Banner Panel -->
       <div class="bg-[#ffffff] p-6 md:p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 class="text-xl md:text-2xl text-[#2a2621]">TV Show Release Notifier</h1>
@@ -259,7 +253,6 @@
         </div>
       </div>
 
-      <!-- Filter Category Tabs -->
       <div class="flex flex-wrap gap-2 pt-2" role="tablist">
         <button onclick="filterCategory('popular')" id="filter-popular" class="btn-action btn-secondary text-xs" role="tab">Trending now</button>
         <button onclick="filterCategory('scifi')" id="filter-scifi" class="btn-action btn-ghost text-xs" role="tab">Sci-Fi & Fantasy</button>
@@ -267,7 +260,6 @@
         <button onclick="filterCategory('animation')" id="filter-animation" class="btn-action btn-ghost text-xs" role="tab">Animation</button>
       </div>
 
-      <!-- Media Grid Section -->
       <div>
         <div class="flex items-center justify-between mb-4">
           <h2 id="section-title" class="text-sm text-[#2a2621] tracking-wide">Trending Television Series</h2>
@@ -533,7 +525,7 @@
     }).join('');
   }
 
-  function toggleTrackShow(showId) {
+  async function toggleTrackShow(showId) {
     const show = currentShows.find(s => s.id === showId) || watchlist.find(s => s.id === showId);
     if (!show) return;
 
@@ -542,8 +534,10 @@
       lastRemovedShow = watchlist[index];
       watchlist.splice(index, 1);
       showToast(`Removed "${show.name}" from watchlist.`);
+      await syncWatchlistToCloud(show, 'remove');
     } else {
       watchlist.push(show);
+      await syncWatchlistToCloud(show, 'add');
     }
 
     localStorage.setItem('showpulse_watchlist', JSON.stringify(watchlist));
@@ -613,10 +607,11 @@
     }, 6000);
   }
 
-  function executeUndo() {
+  async function executeUndo() {
     if (lastRemovedShow) {
       watchlist.push(lastRemovedShow);
       localStorage.setItem('showpulse_watchlist', JSON.stringify(watchlist));
+      await syncWatchlistToCloud(lastRemovedShow, 'add');
       lastRemovedShow = null;
       updateWatchlistBadge();
       document.getElementById('undo-toast').classList.add('hidden');
@@ -721,9 +716,20 @@
 <!-- Supabase JS SDK CDN -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-  const SUPABASE_URL = 'YOUR_SUPABASE_PROJECT_URL';
-  const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+  const SUPABASE_URL = 'https://bwbxxzsqtfzeuyhydrdr.supabase.co';
+  const SUPABASE_ANON_KEY = 'sb_publishable_8hq75Z71GdL8Uu97tbEM8g_q2NYIxRz';
   const supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    if (supabase) {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        const email = session.user.email;
+        document.getElementById('auth-btn-text').textContent = email.split('@')[0];
+        await fetchCloudWatchlist();
+      }
+    }
+  });
 
   async function handleAuth(type) {
     const email = document.getElementById('auth-email').value;
@@ -733,14 +739,14 @@
       return;
     }
     if (!supabase) {
-      alert('Supabase client not initialized. Please add your credentials.');
+      alert('Supabase client not initialized.');
       return;
     }
 
     if (type === 'signup') {
       const { data, error } = await supabase.auth.signUp({ email, password });
       if (error) alert(error.message);
-      else alert('Check your email for the confirmation link!');
+      else alert('Account created! Check your email to confirm registration.');
     } else {
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) alert(error.message);
@@ -748,7 +754,56 @@
         alert('Logged in successfully!');
         toggleAuthModal();
         document.getElementById('auth-btn-text').textContent = email.split('@')[0];
+        await fetchCloudWatchlist();
       }
+    }
+  }
+
+  async function fetchCloudWatchlist() {
+    if (!supabase) return;
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data, error } = await supabase
+            .from('watchlist')
+            .select('*')
+            .eq('user_id', user.id);
+
+    if (!error && data) {
+      watchlist = data.map(item => ({
+        id: item.show_id,
+        name: item.show_name,
+        poster_path: item.poster_path,
+        first_air_date: item.first_air_date,
+        vote_average: item.vote_average
+      }));
+      localStorage.setItem('showpulse_watchlist', JSON.stringify(watchlist));
+      updateWatchlistBadge();
+      const activeDiscover = !document.getElementById('view-discover').classList.contains('hidden');
+      if (activeDiscover) renderShowCards(currentShows, 'shows-grid');
+      else renderWatchlist();
+    }
+  }
+
+  async function syncWatchlistToCloud(show, action) {
+    if (!supabase) return;
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    if (action === 'add') {
+      await supabase.from('watchlist').insert({
+        user_id: user.id,
+        show_id: show.id,
+        show_name: show.name,
+        poster_path: show.poster_path,
+        first_air_date: show.first_air_date,
+        vote_average: show.vote_average
+      });
+    } else if (action === 'remove') {
+      await supabase.from('watchlist').delete().match({
+        user_id: user.id,
+        show_id: show.id
+      });
     }
   }
 </script>
