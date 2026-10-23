@@ -491,9 +491,8 @@
       const isTracked = watchlist.some(s => s.id === show.id);
       const posterUrl = show.poster_path ? `${TMDB_IMAGE_BASE}${show.poster_path}` : 'https://placehold.co/500x750/ffffff/2a2621?text=No+Poster';
 
-    let countdownText = 'TBA';
-      // Use next episode air date if TMDB provides it, otherwise fall back to first_air_date
-      const targetDateStr = show.next_episode_to_air?.air_date || show.first_air_date;
+  let countdownText = 'TBA';
+      const targetDateStr = show.next_episode_to_air?.air_date;
 
       if (targetDateStr) {
         const [year, month, day] = targetDateStr.split('-').map(Number);
@@ -510,6 +509,9 @@
         else if (diffDays === 1) countdownText = 'Airs tomorrow';
         else if (diffDays > 1) countdownText = `Airs in ${diffDays} days`;
         else countdownText = 'Aired';
+      } else {
+        // If there's no official next episode scheduled on TMDB, label it ongoing rather than an old premiere date
+        countdownText = show.status === 'Ended' ? 'Ended' : 'Ongoing / TBA';
       }
       
       return `
