@@ -487,15 +487,15 @@
       return;
     }
 
-    container.innerHTML = shows.map((show, idx) => {
+    container.innerHTML = shows.map((show) => {
       const isTracked = watchlist.some(s => s.id === show.id);
       const posterUrl = show.poster_path ? `${TMDB_IMAGE_BASE}${show.poster_path}` : 'https://placehold.co/500x750/ffffff/2a2621?text=No+Poster';
 
-  let countdownText = 'TBA';
-      const targetDateStr = show.next_episode_to_air?.air_date;
+      let countdownText = 'Ongoing / TBA';
+      let displayDate = show.next_air_date || show.next_episode_to_air?.air_date;
 
-      if (targetDateStr) {
-        const [year, month, day] = targetDateStr.split('-').map(Number);
+      if (displayDate) {
+        const [year, month, day] = displayDate.split('-').map(Number);
         const airDate = new Date(year, month - 1, day);
         
         const today = new Date();
@@ -508,10 +508,7 @@
         if (diffDays === 0) countdownText = 'Airing today';
         else if (diffDays === 1) countdownText = 'Airs tomorrow';
         else if (diffDays > 1) countdownText = `Airs in ${diffDays} days`;
-        else countdownText = 'Aired';
-      } else {
-        // If there's no official next episode scheduled on TMDB, label it ongoing rather than an old premiere date
-        countdownText = show.status === 'Ended' ? 'Ended' : 'Ongoing / TBA';
+        else countdownText = `Aired ${Math.abs(diffDays)}d ago`;
       }
       
       return `
@@ -527,8 +524,8 @@
                 <h3 class="text-xs text-[#2a2621] truncate" title="${show.name}">${show.name}</h3>
                 <div class="flex items-center justify-between mt-1.5">
                   <span class="text-[10px] text-[#635c53]">${show.first_air_date ? show.first_air_date.substring(0, 4) : 'TBA'}</span>
-                  <span class="text-[10px] bg-[#e4aa44] text-[#2a2621] px-1.5 py-0.5">
-                    ${countdownText}
+                  <span class="text-[10px] bg-[#e4aa44] text-[#2a2621] px-1.5 py-0.5 truncate max-w-[90px]" title="${displayDate || 'TBA'}">
+                    ${displayDate ? displayDate : countdownText}
                   </span>
                 </div>
               </div>
@@ -545,11 +542,9 @@
     }).join('');
   }
 
- async function toggleTrackShow(showId) {
-    // Check current list or watchlist first
+  async function toggleTrackShow(showId) {
     let show = currentShows.find(s => s.id === showId) || watchlist.find(s => s.id === showId);
     
-    // Fallback: If opened via search/modal and not in current catalog array, grab data from modal DOM
     if (!show) {
       const titleEl = document.getElementById('modal-show-title');
       if (titleEl && titleEl.textContent && titleEl.textContent !== 'Show Title') {
@@ -613,20 +608,20 @@
       return;
     }
 
-    timeline.innerHTML = watchlist.map((show, idx) => {
-      const daysRemaining = (idx + 1) * 3;
+    timeline.innerHTML = watchlist.map((show) => {
+      let airText = show.next_air_date ? `Next episode airing on ${show.next_air_date}` : 'No upcoming episode scheduled';
       return `
           <div class="bg-[#ffffff] p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div class="flex items-center space-x-4">
               <img src="${show.poster_path ? TMDB_IMAGE_BASE + show.poster_path : 'https://placehold.co/100x150/ffffff/2a2621?text=No+Img'}" alt="${show.name}" class="w-12 h-16 object-cover">
               <div>
                 <h4 class="text-sm text-[#2a2621]">${show.name}</h4>
-                <p class="text-[11px] text-[#635c53] mt-0.5">Next episode airing in ${daysRemaining} days</p>
+                <p class="text-[11px] text-[#635c53] mt-0.5">${airText}</p>
               </div>
             </div>
             <div>
               <span class="bg-[#e4aa44] px-3 py-1 text-[11px] text-[#2a2621] inline-block">
-                ${daysRemaining}d 14h 22m
+                ${show.next_air_date || 'TBA'}
               </span>
             </div>
           </div>
@@ -724,17 +719,43 @@
     modal.classList.toggle('hidden');
   }
 
-  function requestPushPermission() {
-    if (!('Notification' in window)) {
-      alert('This browser does not support desktop notifications.');
+  async function requestPushPermission() {
+    if (!('Notification' in window) || !('serviceWorker' in navigator)) {
+      alert('This browser does not support push notifications.');
       return;
     }
-    Notification.requestPermission().then(permission => {
-      document.getElementById('push-permission-status').textContent = permission;
-      if (permission === 'granted') {
-        alert('Web Push notifications enabled successfully.');
+    
+    const permission = await Notification.requestPermission();
+    document.getElementById('push-permission-status').textContent = permission;
+
+    if (permission === 'granted') {
+      try {
+        const publicVapidKey = 'BEdjFN2gAtynw2kkIs_I8JeQ-FXl8uaRSLjB38UO_zx6fx4BKFKvjZY9ABIIwL6r3KifHQQeZLQCAJ2IVXqVB64';
+        const registration = await navigator.serviceWorker.ready;
+        
+        const subscription = await registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: publicVapidKey
+        });
+
+        const p256dh = btoa(String.fromCharCode.apply(null, new Uint8Array(subscription.getKey('p256dh'))));
+        const auth = btoa(String.fromCharCode.apply(null, new Uint8Array(subscription.getKey('auth'))));
+
+        const { data: { user } } = await supabase.auth.getUser();
+
+        await supabase.from('push_subscriptions').insert({
+          user_id: user ? user.id : null,
+          endpoint: subscription.endpoint,
+          p256dh: p256dh,
+          auth: auth
+        });
+
+        alert('Web Push notifications enabled and registered successfully!');
+      } catch (err) {
+        console.error('Failed to subscribe to push:', err);
+        alert('Error registering push subscription.');
       }
-    });
+    }
   }
 
   function sendTestNotification() {
@@ -811,7 +832,7 @@
         name: item.show_name,
         poster_path: item.poster_path,
         first_air_date: item.first_air_date,
-        next_air_date: item.next_air_date, // <--- Added here
+        next_air_date: item.next_air_date,
         vote_average: item.vote_average
       }));
       localStorage.setItem('showpulse_watchlist', JSON.stringify(watchlist));
@@ -828,8 +849,7 @@
     if (!user) return;
 
     if (action === 'add') {
-      // Fetch full details to ensure we grab the live next_episode_to_air date from TMDB
-      let nextAirDate = show.next_episode_to_air?.air_date || null;
+      let nextAirDate = show.next_air_date || null;
       try {
         const res = await fetch(`${TMDB_BASE_URL}/tv/${show.id}?api_key=${TMDB_API_KEY}`);
         const fullShow = await res.json();
@@ -846,7 +866,7 @@
         show_name: show.name,
         poster_path: show.poster_path,
         first_air_date: show.first_air_date,
-        next_air_date: nextAirDate, // <--- Saves the exact upcoming episode date!
+        next_air_date: nextAirDate,
         vote_average: show.vote_average
       });
     } else if (action === 'remove') {
