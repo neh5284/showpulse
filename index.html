@@ -491,9 +491,22 @@
       const isTracked = watchlist.some(s => s.id === show.id);
       const posterUrl = show.poster_path ? `${TMDB_IMAGE_BASE}${show.poster_path}` : 'https://placehold.co/500x750/ffffff/2a2621?text=No+Poster';
 
-      const airDays = ((idx % 5) + 1) * 2;
-      const countdownText = airDays === 2 ? 'Airing today' : `Airs in ${airDays} days`;
+     let countdownText = 'TBA';
+      if (show.first_air_date) {
+        const airDate = new Date(show.first_air_date);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        airDate.setHours(0, 0, 0, 0);
+        
+        const diffTime = airDate - today;
+        const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
 
+        if (diffDays === 0) countdownText = 'Airing today';
+        else if (diffDays === 1) countdownText = 'Airs tomorrow';
+        else if (diffDays > 1) countdownText = `Airs in ${diffDays} days`;
+        else countdownText = 'Aired';
+      }
+      
       return `
           <div class="bg-[#ffffff] flex flex-col justify-between p-2.5 md:p-3 transition-colors hover:bg-[#fcf9f2]">
             <div class="relative cursor-pointer" onclick="openShowModal(${show.id})" role="button" aria-label="View details for ${show.name}">
