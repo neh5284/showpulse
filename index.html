@@ -811,6 +811,7 @@
         name: item.show_name,
         poster_path: item.poster_path,
         first_air_date: item.first_air_date,
+        next_air_date: item.next_air_date, // <--- Added here
         vote_average: item.vote_average
       }));
       localStorage.setItem('showpulse_watchlist', JSON.stringify(watchlist));
@@ -827,12 +828,25 @@
     if (!user) return;
 
     if (action === 'add') {
+      // Fetch full details to ensure we grab the live next_episode_to_air date from TMDB
+      let nextAirDate = show.next_episode_to_air?.air_date || null;
+      try {
+        const res = await fetch(`${TMDB_BASE_URL}/tv/${show.id}?api_key=${TMDB_API_KEY}`);
+        const fullShow = await res.json();
+        if (fullShow.next_episode_to_air?.air_date) {
+          nextAirDate = fullShow.next_episode_to_air.air_date;
+        }
+      } catch (e) {
+        console.error('Could not fetch next episode date', e);
+      }
+
       await supabase.from('watchlist').insert({
         user_id: user.id,
         show_id: show.id,
         show_name: show.name,
         poster_path: show.poster_path,
         first_air_date: show.first_air_date,
+        next_air_date: nextAirDate, // <--- Saves the exact upcoming episode date!
         vote_average: show.vote_average
       });
     } else if (action === 'remove') {
