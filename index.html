@@ -492,9 +492,11 @@
       const posterUrl = show.poster_path ? `${TMDB_IMAGE_BASE}${show.poster_path}` : 'https://placehold.co/500x750/ffffff/2a2621?text=No+Poster';
 
     let countdownText = 'TBA';
-      if (show.first_air_date) {
-        // Split the YYYY-MM-DD string to avoid UTC timezone offset bugs
-        const [year, month, day] = show.first_air_date.split('-').map(Number);
+      // Use next episode air date if TMDB provides it, otherwise fall back to first_air_date
+      const targetDateStr = show.next_episode_to_air?.air_date || show.first_air_date;
+
+      if (targetDateStr) {
+        const [year, month, day] = targetDateStr.split('-').map(Number);
         const airDate = new Date(year, month - 1, day);
         
         const today = new Date();
