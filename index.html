@@ -491,9 +491,12 @@
       const isTracked = watchlist.some(s => s.id === show.id);
       const posterUrl = show.poster_path ? `${TMDB_IMAGE_BASE}${show.poster_path}` : 'https://placehold.co/500x750/ffffff/2a2621?text=No+Poster';
 
-     let countdownText = 'TBA';
+    let countdownText = 'TBA';
       if (show.first_air_date) {
-        const airDate = new Date(show.first_air_date);
+        // Split the YYYY-MM-DD string to avoid UTC timezone offset bugs
+        const [year, month, day] = show.first_air_date.split('-').map(Number);
+        const airDate = new Date(year, month - 1, day);
+        
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         airDate.setHours(0, 0, 0, 0);
